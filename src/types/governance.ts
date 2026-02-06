@@ -96,11 +96,17 @@ export interface PolicyRule {
 }
 
 export interface DashboardMetrics {
-  totalPrompts: number;
-  approvedResponses: number;
-  pendingReviews: number;
-  policyViolations: number;
-  averageConfidence: number;
-  averageBiasScore: number;
-  hallucinationRate: number;
+  total_prompts: number;
+  approved_responses: number;
+  pending_review: number;
+  policy_violations: number;
+  trust_scores: {
+    overall_trust: number;
+    bias_risk: number;
+  };
+  hallucination: {
+    grounded: number;
+    avg_confidence: number;
+    hallucination_rate: number;
+  };
 }

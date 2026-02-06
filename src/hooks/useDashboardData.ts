@@ -1,24 +1,8 @@
 import { useState, useEffect } from 'react';
-
-
-// Mapping backend keys (snake_case) to frontend types (camelCase) happens here or in component
-// But for now, backend returns snake_case, so let's define a local interface matching API
-// OR we map it manually. Let's keep local interface matching API for simplicity then map later if needed.
-// Actually, to be safe, I'll update local interface to match API exact structure
-interface MetricsResponse {
-    total_prompts: number;
-    approved: number;
-    pending: number;
-    violations: number;
-    trust_score: number;
-    average_confidence: number;
-    groundedness_score: number;
-    hallucination_rate: number;
-    bias_score: number;
-}
+import type { DashboardMetrics } from '@/types/governance';
 
 export function useDashboardData() {
-    const [metrics, setMetrics] = useState<MetricsResponse | null>(null);
+    const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
     const [activities, setActivities] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -45,14 +29,18 @@ export function useDashboardData() {
             setError('');
             setMetrics({
                 total_prompts: 0,
-                approved: 0,
-                pending: 0,
-                violations: 0,
-                trust_score: 100,
-                average_confidence: 100,
-                groundedness_score: 100,
-                hallucination_rate: 0,
-                bias_score: 0
+                approved_responses: 0,
+                pending_review: 0,
+                policy_violations: 0,
+                trust_scores: {
+                    overall_trust: 100,
+                    bias_risk: 0
+                },
+                hallucination: {
+                    grounded: 100,
+                    avg_confidence: 100,
+                    hallucination_rate: 0
+                }
             });
             setActivities([]);
         } finally {
@@ -62,7 +50,7 @@ export function useDashboardData() {
 
     useEffect(() => {
         fetchData();
-        const interval = setInterval(fetchData, 10000); // 10s refresh
+        const interval = setInterval(fetchData, 2000); // 2s refresh
         return () => clearInterval(interval);
     }, []);
 

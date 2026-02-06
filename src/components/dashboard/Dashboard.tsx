@@ -25,17 +25,24 @@ export function Dashboard() {
     );
   }
 
+  // Safety net
+  const safe = (v: number | undefined | null) => Number.isFinite(v) ? v! : 0;
+
   // Fallback if null (should handle in hook but being safe)
   const safeMetrics = metrics || {
     total_prompts: 0,
-    approved: 0,
-    pending: 0,
-    violations: 0,
-    trust_score: 100,
-    average_confidence: 100,
-    groundedness_score: 100,
-    hallucination_rate: 0,
-    bias_score: 0
+    approved_responses: 0,
+    pending_review: 0,
+    policy_violations: 0,
+    trust_scores: {
+      overall_trust: 0,
+      bias_risk: 0
+    },
+    hallucination: {
+      grounded: 0,
+      avg_confidence: 0,
+      hallucination_rate: 0
+    }
   };
 
   return (
@@ -66,28 +73,28 @@ export function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           title="Total Prompts"
-          value={safeMetrics.total_prompts}
+          value={safe(safeMetrics.total_prompts)}
           subtitle="All time"
           icon={MessageSquare}
           variant="primary"
         />
         <MetricCard
           title="Approved Responses"
-          value={safeMetrics.approved}
-          subtitle={`${safeMetrics.total_prompts ? Math.round((safeMetrics.approved / safeMetrics.total_prompts) * 100) : 0}% approval rate`}
+          value={safe(safeMetrics.approved_responses)}
+          subtitle={`${safe(safeMetrics.total_prompts) ? Math.round((safe(safeMetrics.approved_responses) / safe(safeMetrics.total_prompts)) * 100) : 0}% approval rate`}
           icon={CheckCircle}
           variant="success"
         />
         <MetricCard
           title="Pending Review"
-          value={safeMetrics.pending}
+          value={safe(safeMetrics.pending_review)}
           subtitle="Requires human oversight"
           icon={Clock}
           variant="warning"
         />
         <MetricCard
           title="Policy Violations"
-          value={safeMetrics.violations}
+          value={safe(safeMetrics.policy_violations)}
           subtitle="Blocked by governance"
           icon={AlertTriangle}
           variant="destructive"
@@ -99,8 +106,8 @@ export function Dashboard() {
         <div className="glass-card p-6">
           <h3 className="text-lg font-semibold mb-6">Trust Scores</h3>
           <div className="flex items-center justify-around">
-            <RiskGauge score={Math.round(safeMetrics.trust_score)} level="low" label="Overall Trust" />
-            <RiskGauge score={Math.round(safeMetrics.bias_score)} level={safeMetrics.bias_score > 50 ? "high" : "low"} label="Bias Risk" />
+            <RiskGauge score={Math.round(safe(safeMetrics.trust_scores?.overall_trust))} level="low" label="Overall Trust" />
+            <RiskGauge score={Math.round(safe(safeMetrics.trust_scores?.bias_risk))} level={safe(safeMetrics.trust_scores?.bias_risk) > 50 ? "high" : "low"} label="Bias Risk" />
           </div>
         </div>
 
@@ -112,21 +119,21 @@ export function Dashboard() {
                 <Brain className="w-5 h-5 text-success" />
                 <span className="font-medium">Grounded Responses</span>
               </div>
-              <span className="text-xl font-bold text-success">{Math.round(safeMetrics.groundedness_score)}%</span>
+              <span className="text-xl font-bold text-success">{Math.round(safe(safeMetrics.hallucination?.grounded))}%</span>
             </div>
             <div className="flex items-center justify-between p-3 rounded-lg bg-warning/10 border border-warning/30">
               <div className="flex items-center gap-3">
                 <Target className="w-5 h-5 text-warning" />
                 <span className="font-medium">Avg Confidence</span>
               </div>
-              <span className="text-xl font-bold text-warning">{safeMetrics.average_confidence}%</span>
+              <span className="text-xl font-bold text-warning">{safe(safeMetrics.hallucination?.avg_confidence)}%</span>
             </div>
             <div className="flex items-center justify-between p-3 rounded-lg bg-destructive/10 border border-destructive/30">
               <div className="flex items-center gap-3">
                 <AlertTriangle className="w-5 h-5 text-destructive" />
                 <span className="font-medium">Hallucination Rate</span>
               </div>
-              <span className="text-xl font-bold text-destructive">{safeMetrics.hallucination_rate}%</span>
+              <span className="text-xl font-bold text-destructive">{safe(safeMetrics.hallucination?.hallucination_rate)}%</span>
             </div>
           </div>
         </div>
